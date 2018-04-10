@@ -5,7 +5,7 @@ function love.load()
   jeffImage = love.graphics.newImage("resources/images/jeffsmall.jpeg")
   alexImage = love.graphics.newImage("resources/images/alex.jpeg")
 
-  torpedoTimerMax = 0.5
+  torpedoTimerMax = 0.6
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
@@ -14,7 +14,8 @@ function love.load()
   chargeSpeed = 800
   spawnTimerMax = 0.5
   score=0
-
+  meetings=0
+  speedFactor=0
   love.window.setTitle( "Avoid That Meeting!" )
   soundTrack = love.audio.newSource("resources/audio/Mercury.wav","static")
   soundTrack:play()
@@ -38,7 +39,7 @@ function love.draw()
   font = love.graphics.newFont(12)
   love.graphics.setFont(font)
   love.graphics.setColor(255, 255, 255)
-  love.graphics.print("Score: " .. score .. " Health: " .. player.health .. "/100", love.graphics.getWidth()/2,0)
+  love.graphics.print("Meetings: " .. meetings .. " Score: " .. score .. " Health: " .. player.health .. "/100", 10,0)
   love.graphics.setColor(186, 255, 255)
   background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-20)
   love.graphics.setColor(255, 255, 255)
@@ -63,8 +64,12 @@ function love.update(dt)
   updateTorpedoes(dt)
   updateEnemies(dt)
   checkCollisions()
+  updateSpeedFactor()
 end
-
+--updateSpeedFactor
+function updateSpeedFactor()
+  speedFactor = (score/50) * 20
+end
 -- Player logic
 
 function updatePlayer(dt)
@@ -156,11 +161,11 @@ function spawnEnemy()
   y = love.math.random(0, love.graphics.getHeight() - 64)
   enemyType = love.math.random(0, 2)
   if enemyType == 0 then
-    enemy = Enemy:new{score = 1,yPos = y, speed = wattonSpeed, img = wattonImage, update=moveLeft}
+    enemy = Enemy:new{score = 1,yPos = y, speed = wattonSpeed + speedFactor, img = wattonImage, update=moveLeft}
   elseif enemyType == 1 then
-    enemy = Enemy:new{score = 10,yPos = y, speed = jeffSpeed, img = jeffImage, update=chargePlayer}
+    enemy = Enemy:new{score = 10,yPos = y, speed = jeffSpeed + speedFactor , img = jeffImage, update=chargePlayer}
   else
-    enemy = Enemy:new{score = 5, yPos = y, speed = alexSpeed, img = alexImage, update=moveToPlayer}
+    enemy = Enemy:new{score = 5, yPos = y, speed = alexSpeed + speedFactor , img = alexImage, update=moveToPlayer}
   end
   table.insert(enemies, enemy)
 
@@ -220,6 +225,7 @@ function checkCollisions()
         if player.health <= 0 then
           shootSound1 = love.audio.newSource("resources/audio/Lightening.wav","static")
           shootSound1:play()
+          meetings = meetings + 1
           startGame()
         end
     end
@@ -227,6 +233,8 @@ function checkCollisions()
 
     for index2, torpedo in ipairs(torpedoes) do
       if intersects(enemy, torpedo) then
+        shootSound2 = love.audio.newSource("resources/audio/Lightening.wav","static")
+        shootSound2:play()
         score = score + enemy.score
         table.remove(enemies, index)
         table.remove(torpedoes, index2)
