@@ -9,12 +9,12 @@ function love.load()
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
-  jeffSpeed = 250
+  jeffSpeed = 100
   alexSpeed = 300
-  chargeSpeed = 1000
+  chargeSpeed = 800
   spawnTimerMax = 0.5
   score=0
-  love.window.setTitle( "Meeting Killer" )
+  love.window.setTitle( "Avoid That Meeting!" )
   startGame()
 end
 
@@ -146,11 +146,11 @@ function spawnEnemy()
   y = love.math.random(0, love.graphics.getHeight() - 64)
   enemyType = love.math.random(0, 2)
   if enemyType == 0 then
-    enemy = Enemy:new{yPos = y, speed = wattonSpeed, img = wattonImage, update=moveLeft}
+    enemy = Enemy:new{score = 1,yPos = y, speed = wattonSpeed, img = wattonImage, update=moveLeft}
   elseif enemyType == 1 then
-    enemy = Enemy:new{yPos = y, speed = jeffSpeed, img = jeffImage, update=moveToPlayer}
+    enemy = Enemy:new{score = 10,yPos = y, speed = jeffSpeed, img = jeffImage, update=chargePlayer}
   else
-    enemy = Enemy:new{yPos = y, speed = alexSpeed, img = alexImage, update=chargePlayer}
+    enemy = Enemy:new{score = 5, yPos = y, speed = alexSpeed, img = alexImage, update=moveToPlayer}
   end
   table.insert(enemies, enemy)
 
@@ -190,7 +190,7 @@ function chargePlayer(obj, dt)
   xDistance = math.abs(obj.xPos - player.xPos)
   yDistance = math.abs(obj.yPos - player.yPos)
   distance = math.sqrt(yDistance^2 + xDistance^2)
-  if distance < 150 then
+  if distance < 300 then
     obj.speed = chargeSpeed
     return moveLeft
   end
@@ -203,11 +203,13 @@ end
 function checkCollisions()
   for index, enemy in ipairs(enemies) do
     if intersects(player, enemy) or intersects(enemy, player) then
+      score = score - 100
       startGame()
     end
 
     for index2, torpedo in ipairs(torpedoes) do
       if intersects(enemy, torpedo) then
+        score = score + enemy.score
         table.remove(enemies, index)
         table.remove(torpedoes, index2)
         break
