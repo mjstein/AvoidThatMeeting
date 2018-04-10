@@ -1,19 +1,19 @@
 function love.load()
   submarineImage = love.graphics.newImage("resources/images/submarine.png")
   torpedoImage = love.graphics.newImage("resources/images/torpedo.png")
-  squidImage = love.graphics.newImage("resources/images/watton.jpeg")
-  sharkImage = love.graphics.newImage("resources/images/jeffsmall.jpeg")
-  swordfishImage = love.graphics.newImage("resources/images/alex.jpeg")
+  wattonImage = love.graphics.newImage("resources/images/watton.jpeg")
+  jeffImage = love.graphics.newImage("resources/images/jeffsmall.jpeg")
+  alexImage = love.graphics.newImage("resources/images/alex.jpeg")
 
-  torpedoTimerMax = 0.2
+  torpedoTimerMax = 0.5
   torpedoStartSpeed = 100
-  torpedoMaxSpeed = 300
-  squidSpeed = 200
-  sharkSpeed = 250
-  swordfishSpeed = 300
-  chargeSpeed = 500
+  torpedoMaxSpeed = 600
+  wattonSpeed = 200
+  jeffSpeed = 250
+  alexSpeed = 300
+  chargeSpeed = 1000
   spawnTimerMax = 0.5
-
+  score=0
   love.window.setTitle( "Meeting Killer" )
   startGame()
 end
@@ -30,8 +30,12 @@ print("Starting")
 end
 
 function love.draw()
+  font = love.graphics.newFont(12)
+  love.graphics.setFont(font)
+  love.graphics.setColor(255, 255, 255)
+  love.graphics.print("Score: " .. score, love.graphics.getWidth()/2,0)
   love.graphics.setColor(186, 255, 255)
-  background = love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+  background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-20)
   love.graphics.setColor(255, 255, 255)
 
   love.graphics.draw(player.img, player.xPos, player.yPos, 0, 2, 2)
@@ -41,7 +45,7 @@ function love.draw()
   end
 
   for index, enemy in ipairs(enemies) do
-    love.graphics.draw(enemy.img, enemy.xPos, enemy.yPos, 0, 2, 2)
+   love.graphics.draw(enemy.img, enemy.xPos, enemy.yPos, 0, 2, 2)
   end
 end
 
@@ -142,11 +146,11 @@ function spawnEnemy()
   y = love.math.random(0, love.graphics.getHeight() - 64)
   enemyType = love.math.random(0, 2)
   if enemyType == 0 then
-    enemy = Enemy:new{yPos = y, speed = squidSpeed, img = squidImage, update=moveLeft}
+    enemy = Enemy:new{yPos = y, speed = wattonSpeed, img = wattonImage, update=moveLeft}
   elseif enemyType == 1 then
-    enemy = Enemy:new{yPos = y, speed = sharkSpeed, img = sharkImage, update=moveToPlayer}
+    enemy = Enemy:new{yPos = y, speed = jeffSpeed, img = jeffImage, update=moveToPlayer}
   else
-    enemy = Enemy:new{yPos = y, speed = swordfishSpeed, img = swordfishImage, update=chargePlayer}
+    enemy = Enemy:new{yPos = y, speed = alexSpeed, img = alexImage, update=chargePlayer}
   end
   table.insert(enemies, enemy)
 
