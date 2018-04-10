@@ -9,22 +9,27 @@ function love.load()
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
-  jeffSpeed = 100
-  alexSpeed = 300
+  jeffSpeed = 150
+  alexSpeed = 350
   chargeSpeed = 800
   spawnTimerMax = 0.5
   score=0
+
   love.window.setTitle( "Avoid That Meeting!" )
+  soundTrack = love.audio.newSource("resources/audio/Mercury.wav","static")
+  soundTrack:play()
   startGame()
 end
 
 function startGame()
 print("Starting")
-  player = {xPos = 0, yPos = 0, width = 64, height = 64, speed=200, img=submarineImage}
+  score = 0
+  player = {xPos = 0, yPos = 0, width = 64, height = 64, speed=200, img=submarineImage, health = 100}
   torpedoes = {}
   enemies = {}
 
   canFire = true
+  hasCollided = false
   torpedoTimer = torpedoTimerMax
   spawnTimer = 0
 end
@@ -33,7 +38,7 @@ function love.draw()
   font = love.graphics.newFont(12)
   love.graphics.setFont(font)
   love.graphics.setColor(255, 255, 255)
-  love.graphics.print("Score: " .. score, love.graphics.getWidth()/2,0)
+  love.graphics.print("Score: " .. score .. " Health: " .. player.health .. "/100", love.graphics.getWidth()/2,0)
   love.graphics.setColor(186, 255, 255)
   background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-20)
   love.graphics.setColor(255, 255, 255)
@@ -50,6 +55,9 @@ function love.draw()
 end
 
 function love.update(dt)
+  if not soundTrack:isPlaying() then
+    soundTrack:play()
+  end
   updatePlayer(dt)
 
   updateTorpedoes(dt)
@@ -116,6 +124,8 @@ end
 
 function spawnTorpedo(x, y, speed)
   if canFire then
+    shootSound = love.audio.newSource("resources/audio/Shoot.wav","static")
+    shootSound:play()
     torpedo = {xPos = x, yPos = y, width = 16, height=16, speed=speed, img = torpedoImage}
     table.insert(torpedoes, torpedo)
 
@@ -203,9 +213,17 @@ end
 function checkCollisions()
   for index, enemy in ipairs(enemies) do
     if intersects(player, enemy) or intersects(enemy, player) then
-      score = score - 100
-      startGame()
+    shootSound = love.audio.newSource("resources/audio/Explosion.wav","static")
+    shootSound:play()
+      score = score - 1
+        player.health = player.health -1
+        if player.health <= 0 then
+          shootSound1 = love.audio.newSource("resources/audio/Lightening.wav","static")
+          shootSound1:play()
+          startGame()
+        end
     end
+
 
     for index2, torpedo in ipairs(torpedoes) do
       if intersects(enemy, torpedo) then
@@ -215,6 +233,7 @@ function checkCollisions()
         break
       end
     end
+
   end
 end
 
