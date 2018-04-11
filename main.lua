@@ -6,7 +6,7 @@ function love.load()
   alexImage = love.graphics.newImage("resources/images/alex.jpeg")
   adrianImage = love.graphics.newImage("resources/images/aj.jpeg")
 
-  torpedoTimerMax = 0.7
+  torpedoTimerMax = 0.5
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
@@ -19,6 +19,9 @@ function love.load()
   meetings=0
   speedFactor=0
   xShift=0
+  timer=0
+  ySpeedShift=0
+  xSpeedShift=0
   love.window.setTitle( "Avoid That Meeting!" )
   soundTrack = love.audio.newSource("resources/audio/Mercury.wav","static")
   soundTrack:play()
@@ -74,6 +77,8 @@ function love.draw()
 end
 
 function love.update(dt)
+
+  timer = timer + 1
   if not soundTrack:isPlaying() then
     soundTrack:play()
   end
@@ -207,9 +212,15 @@ function moveLeft(obj, dt)
 end
 
 function moveLeftWithShift(obj, dt)
-  xShift = love.math.random(-1, 1)
-  obj.xPos = obj.xPos - obj.speed * dt
-  obj.speed = obj.speed + xShift*100
+  --obj.speed = obj.speed + xShift*100 -(xShift * 4)
+  if (timer % 30 == 0) then
+    xShift = love.math.random(0, 180)
+    yShift = love.math.random(0, 180)
+    xSpeedShift = math.sin(math.rad (xShift)) * obj.speed
+    ySpeedShift = math.cos(math.rad (yShift)) * obj.speed
+  end
+  obj.yPos = obj.yPos - ySpeedShift * dt
+  obj.xPos = obj.xPos - xSpeedShift * dt
   return moveLeftWithShift
 end
 
