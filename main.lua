@@ -4,18 +4,21 @@ function love.load()
   wattonImage = love.graphics.newImage("resources/images/watton.jpeg")
   jeffImage = love.graphics.newImage("resources/images/jeffsmall.jpeg")
   alexImage = love.graphics.newImage("resources/images/alex.jpeg")
+  adrianImage = love.graphics.newImage("resources/images/aj.jpeg")
 
-  torpedoTimerMax = 0.6
+  torpedoTimerMax = 0.7
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
   jeffSpeed = 150
   alexSpeed = 350
+  adrianSpeed = 350
   chargeSpeed = 800
   spawnTimerMax = 0.5
   score=0
   meetings=0
   speedFactor=0
+  xShift=0
   love.window.setTitle( "Avoid That Meeting!" )
   soundTrack = love.audio.newSource("resources/audio/Mercury.wav","static")
   soundTrack:play()
@@ -23,9 +26,9 @@ function love.load()
 end
 
 function startGame()
-print("Starting")
+  print("Starting")
   score = 0
-  player = {xPos = 0, yPos = 0, width = 64, height = 64, speed=200, img=submarineImage, health = 100}
+  player = {xPos = 0, yPos = 0, width = 64, height = 64, speed=250, img=submarineImage, health = 100}
   torpedoes = {}
   enemies = {}
 
@@ -35,23 +38,26 @@ print("Starting")
   spawnTimer = 0
 end
 
+function generateMeetingText()
+  if meetings == 0 then
+    love.graphics.print("Begin your day ...", 10,love.graphics.getHeight()-20)
+  elseif  meetings >=1 and meetings <3 then
+    love.graphics.print("Well ... it could be worse ...", 10,love.graphics.getHeight()-20)
+  elseif  meetings >=3 and meetings <5 then
+    love.graphics.print("Arghh the pain ...", 10,love.graphics.getHeight()-20)
+  elseif  meetings >=5 and meetings <7 then
+    love.graphics.print("Well there goes the day ...", 10,love.graphics.getHeight()-20)
+  else
+    love.graphics.print("Whoops, there goes the project deadline ...", 10,love.graphics.getHeight()-20)
+  end
+end
+
 function love.draw()
   font = love.graphics.newFont(12)
   love.graphics.setFont(font)
   love.graphics.setColor(255, 255, 255)
   love.graphics.print("Meetings: " .. meetings .. " Score: " .. score .. " Health: " .. player.health .. "/100", 10,0)
-  if meetings == 0 then
-  love.graphics.print("Begin your day ...", 10,love.graphics.getHeight()-20)
-elseif  meetings >=1 and meetings <3 then
-  love.graphics.print("Well ... it could be worse ...", 10,love.graphics.getHeight()-20)
-elseif  meetings >=3 and meetings <5 then
-  love.graphics.print("Arghh the pain ...", 10,love.graphics.getHeight()-20)
-elseif  meetings >=5 and meetings <7 then
-  love.graphics.print("Well there goes the day ...", 10,love.graphics.getHeight()-20)
-else
-  love.graphics.print("Whoops, there goes the project deadline ...", 10,love.graphics.getHeight()-20)
-end
-
+  generateMeetingText()
   love.graphics.setColor(186, 255, 255)
   background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-40)
   love.graphics.setColor(255, 255, 255)
@@ -63,7 +69,7 @@ end
   end
 
   for index, enemy in ipairs(enemies) do
-   love.graphics.draw(enemy.img, enemy.xPos, enemy.yPos, 0, 2, 2)
+    love.graphics.draw(enemy.img, enemy.xPos, enemy.yPos, 0, 2, 2)
   end
 end
 
@@ -171,11 +177,13 @@ end
 
 function spawnEnemy()
   y = love.math.random(0, love.graphics.getHeight() - 64)
-  enemyType = love.math.random(0, 2)
+  enemyType = love.math.random(0, 3)
   if enemyType == 0 then
     enemy = Enemy:new{score = 1,yPos = y, speed = wattonSpeed + speedFactor, img = wattonImage, update=moveLeft}
   elseif enemyType == 1 then
     enemy = Enemy:new{score = 10,yPos = y, speed = jeffSpeed + speedFactor , img = jeffImage, update=chargePlayer}
+  elseif enemyType == 2 then
+    enemy = Enemy:new{score = 10,yPos = y, speed = adrianSpeed + speedFactor , img = adrianImage, update=moveLeftWithShift}
   else
     enemy = Enemy:new{score = 5, yPos = y, speed = alexSpeed + speedFactor , img = alexImage, update=moveToPlayer}
   end
@@ -196,6 +204,13 @@ end
 function moveLeft(obj, dt)
   obj.xPos = obj.xPos - obj.speed * dt
   return moveLeft
+end
+
+function moveLeftWithShift(obj, dt)
+  xShift = love.math.random(-1, 1)
+  obj.xPos = obj.xPos - obj.speed * dt
+  obj.speed = obj.speed + xShift*100
+  return moveLeftWithShift
 end
 
 function moveToPlayer(obj, dt)
@@ -230,16 +245,16 @@ end
 function checkCollisions()
   for index, enemy in ipairs(enemies) do
     if intersects(player, enemy) or intersects(enemy, player) then
-    shootSound = love.audio.newSource("resources/audio/Explosion.wav","static")
-    shootSound:play()
+      shootSound = love.audio.newSource("resources/audio/Explosion.wav","static")
+      shootSound:play()
       score = score - 1
-        player.health = player.health -1
-        if player.health <= 0 then
-          shootSound1 = love.audio.newSource("resources/audio/Lightening.wav","static")
-          shootSound1:play()
-          meetings = meetings + 1
-          startGame()
-        end
+      player.health = player.health -1
+      if player.health <= 0 then
+        shootSound1 = love.audio.newSource("resources/audio/Lightening.wav","static")
+        shootSound1:play()
+        meetings = meetings + 1
+        startGame()
+      end
     end
 
 
@@ -259,7 +274,7 @@ end
 
 function intersects(rect1, rect2)
   if rect1.xPos < rect2.xPos and rect1.xPos + rect1.width > rect2.xPos and
-     rect1.yPos < rect2.yPos and rect1.yPos + rect1.height > rect2.yPos then
+  rect1.yPos < rect2.yPos and rect1.yPos + rect1.height > rect2.yPos then
     return true
   else
     return false
