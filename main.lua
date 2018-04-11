@@ -40,8 +40,20 @@ function love.draw()
   love.graphics.setFont(font)
   love.graphics.setColor(255, 255, 255)
   love.graphics.print("Meetings: " .. meetings .. " Score: " .. score .. " Health: " .. player.health .. "/100", 10,0)
+  if meetings == 0 then
+  love.graphics.print("Begin your day ...", 10,love.graphics.getHeight()-20)
+elseif  meetings >=1 and meetings <3 then
+  love.graphics.print("Well ... it could be worse ...", 10,love.graphics.getHeight()-20)
+elseif  meetings >=3 and meetings <5 then
+  love.graphics.print("Arghh the pain ...", 10,love.graphics.getHeight()-20)
+elseif  meetings >=5 and meetings <7 then
+  love.graphics.print("Well there goes the day ...", 10,love.graphics.getHeight()-20)
+else
+  love.graphics.print("Whoops, there goes the project deadline ...", 10,love.graphics.getHeight()-20)
+end
+
   love.graphics.setColor(186, 255, 255)
-  background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-20)
+  background = love.graphics.rectangle("fill", 0, 20, love.graphics.getWidth(), love.graphics.getHeight()-40)
   love.graphics.setColor(255, 255, 255)
 
   love.graphics.draw(player.img, player.xPos, player.yPos, 0, 2, 2)
