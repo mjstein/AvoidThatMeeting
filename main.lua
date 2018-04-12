@@ -6,14 +6,14 @@ function love.load()
   alexImage = love.graphics.newImage("resources/images/alex.jpeg")
   adrianImage = love.graphics.newImage("resources/images/aj.jpeg")
 
-  torpedoTimerMax = 0.5
+  torpedoTimerMax = 0.7
   torpedoStartSpeed = 100
   torpedoMaxSpeed = 600
   wattonSpeed = 200
   jeffSpeed = 150
   alexSpeed = 350
   adrianSpeed = 350
-  chargeSpeed = 800
+  chargeSpeed = 1200
   spawnTimerMax = 0.5
   score=0
   meetings=0
@@ -125,7 +125,8 @@ function updatePlayer(dt)
     elseif(right) then
       torpedoSpeed = torpedoSpeed + player.speed/2
     end
-    spawnTorpedo(player.xPos + player.width, player.yPos + player.height/2, torpedoSpeed)
+    torpAngle = love.math.random(70, 110)
+    spawnTorpedo(player.xPos + player.width, player.yPos + player.height/2, torpedoSpeed, torpAngle)
   end
 
   if torpedoTimer > 0 then
@@ -140,7 +141,10 @@ end
 function updateTorpedoes(dt)
   for i=table.getn(torpedoes), 1, -1 do
     torpedo = torpedoes[i]
-    torpedo.xPos = torpedo.xPos + dt * torpedo.speed
+    xSpeedT = math.sin(math.rad (torpedo.torpAngle)) * torpedo.speed
+    ySpeedT = math.cos(math.rad (torpedo.torpAngle)) * torpedo.speed
+    torpedo.xPos = torpedo.xPos + dt * xSpeedT
+    torpedo.yPos = torpedo.yPos + dt * ySpeedT
     if torpedo.speed < torpedoMaxSpeed then
       torpedo.speed = torpedo.speed + dt * 100
     end
@@ -150,11 +154,11 @@ function updateTorpedoes(dt)
   end
 end
 
-function spawnTorpedo(x, y, speed)
+function spawnTorpedo(x, y, speed,torpAngle)
   if canFire then
     shootSound = love.audio.newSource("resources/audio/Shoot.wav","static")
     shootSound:play()
-    torpedo = {xPos = x, yPos = y, width = 16, height=16, speed=speed, img = torpedoImage}
+    torpedo = {xPos = x, yPos = y, width = 16, height=16, speed=speed, img = torpedoImage, justFired= true, torpAngle = torpAngle}
     table.insert(torpedoes, torpedo)
 
     canFire = false
@@ -188,7 +192,7 @@ function spawnEnemy()
   elseif enemyType == 1 then
     enemy = Enemy:new{score = 10,yPos = y, speed = jeffSpeed + speedFactor , img = jeffImage, update=chargePlayer}
   elseif enemyType == 2 then
-    enemy = Enemy:new{score = 10,yPos = y, speed = adrianSpeed + speedFactor , img = adrianImage, update=moveLeftWithShift}
+    enemy = Enemy:new{score = 14,yPos = y, speed = adrianSpeed + speedFactor , img = adrianImage, update=moveLeftWithShift}
   else
     enemy = Enemy:new{score = 5, yPos = y, speed = alexSpeed + speedFactor , img = alexImage, update=moveToPlayer}
   end
